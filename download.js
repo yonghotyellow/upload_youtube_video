@@ -25,49 +25,49 @@ const { error } = require('console');
 const drive = google.drive('v3');
 const youtube = google.youtube('v3');
 
-async function downloadFile(fileId) {
-    // For converting document formats, and for downloading template
-    // documents, see the method drive.files.export():
-    // https://developers.google.com/drive/api/v3/manage-downloads
-    return drive.files
-        .get({ fileId, fields: 'name' })
-        .then(res => {
-            const filename = res.data.name;
-            const extension = path.extname(filename).toLowerCase();
-            if (extension != '.mp4') {
-                console.log(`Skipping file: ${fileId} (not MP4)`);
-                return; // Skip download if not MP4
-            }
-            return drive.files
-                .get({ fileId, alt: 'media' }, { responseType: 'stream' })
-                .then(res => {
-                    return new Promise((resolve, reject) => {
-                        const filePath = path.join(__dirname, './video', `${filename}`);
-                        console.log(`writing to ${filePath}`);
-                        const dest = fs.createWriteStream(filePath);
-                        let progress = 0;
+// async function downloadFile(fileId) {
+//     // For converting document formats, and for downloading template
+//     // documents, see the method drive.files.export():
+//     // https://developers.google.com/drive/api/v3/manage-downloads
+//     return drive.files
+//         .get({ fileId, fields: 'name' })
+//         .then(res => {
+//             const filename = res.data.name;
+//             const extension = path.extname(filename).toLowerCase();
+//             if (extension != '.mp4') {
+//                 console.log(`Skipping file: ${fileId} (not MP4)`);
+//                 return; // Skip download if not MP4
+//             }
+//             return drive.files
+//                 .get({ fileId, alt: 'media' }, { responseType: 'stream' })
+//                 .then(res => {
+//                     return new Promise((resolve, reject) => {
+//                         const filePath = path.join(__dirname, './video', `${filename}`);
+//                         console.log(`writing to ${filePath}`);
+//                         const dest = fs.createWriteStream(filePath);
+//                         let progress = 0;
 
-                        res.data
-                            .on('end', () => {
-                                console.log('Done downloading file.');
-                                resolve(filePath);
-                            })
-                            .on('error', err => {
-                                console.error('Error downloading file.');
-                                reject(err);
-                            })
-                            .on('data', d => {
-                                progress += d.length;
-                                const progressInMB = (progress / (1024 * 1024)).toFixed(2);
+//                         res.data
+//                             .on('end', () => {
+//                                 console.log('Done downloading file.');
+//                                 resolve(filePath);
+//                             })
+//                             .on('error', err => {
+//                                 console.error('Error downloading file.');
+//                                 reject(err);
+//                             })
+//                             .on('data', d => {
+//                                 progress += d.length;
+//                                 const progressInMB = (progress / (1024 * 1024)).toFixed(2);
 
-                                process.stdout.write(`Downloaded ${progressInMB} MB\r`);
-                            })
-                            .pipe(dest);
-                    });
-                })
+//                                 process.stdout.write(`Downloaded ${progressInMB} MB\r`);
+//                             })
+//                             .pipe(dest);
+//                     });
+//                 })
 
-        });
-}
+//         });
+// }
 
 async function uploadFile(filePath, vidTitle, vidDescription) {
     const fileSize = fs.statSync(filePath).size;
@@ -107,18 +107,18 @@ async function uploadFile(filePath, vidTitle, vidDescription) {
     return res.data;
 }
 
-function getFileIdFromUrl(url) {
-    const urlParts = url.split('/');
-    // Identify the segment containing the file ID based on its position
-    const fileIdSegmentIndex = urlParts.findIndex(segment => segment === 'd');
-    if (fileIdSegmentIndex !== -1) {
-        console.log('fileID: ', urlParts[fileIdSegmentIndex + 1]);
-        return urlParts[fileIdSegmentIndex + 1];
-    } else {
-        console.error('Invalid Google Drive file URL format.');
-        return null; // Indicate error or provide a default value
-    }
-}
+// function getFileIdFromUrl(url) {
+//     const urlParts = url.split('/');
+//     // Identify the segment containing the file ID based on its position
+//     const fileIdSegmentIndex = urlParts.findIndex(segment => segment === 'd');
+//     if (fileIdSegmentIndex !== -1) {
+//         console.log('fileID: ', urlParts[fileIdSegmentIndex + 1]);
+//         return urlParts[fileIdSegmentIndex + 1];
+//     } else {
+//         console.error('Invalid Google Drive file URL format.');
+//         return null; // Indicate error or provide a default value
+//     }
+// }
 
 async function getAuth() {
     try {
@@ -145,56 +145,81 @@ async function getAuth() {
 }
 
 
-async function downloadAndUploadFiles(urls, titles, descriptions) {
+// async function downloadAndUploadFiles(urls, titles, descriptions) {
+//     const auth = await getAuth();
+//     google.options({ auth });
+//     const fileIds = [];
+//     for (const fileUrl of urls) {
+//         const extractedFileId = getFileIdFromUrl(fileUrl);
+//         if (extractedFileId) {
+//             fileIds.push(extractedFileId);
+//         }
+//     }
+//     for (let i = 0; i < fileIds.length; i++) {
+//         try {
+//             const fileId = fileIds[i];
+//             const title = titles[i];
+//             const description = descriptions[i];
+
+//             // Download the video (using your provided downloadFile function)
+//             const filePath = await downloadFile(fileId);
+//             // Check if the file was downloaded successfully
+//             if (!filePath) {
+//                 console.warn(`Skipped upload for fileId: ${fileId}`);
+//                 continue; // Skip upload if download failed
+//             }
+
+//             // Upload the downloaded video (using your provided uploadFile function)
+//             await uploadFile(filePath, title, description).catch(console.error);
+
+//         } catch (error) {
+//             console.error(`Error uploading ${fileIds[i]}: ${error.message}`);
+//         }
+//     }
+// }
+
+async function UploadAllFIles(paths, titles, descriptions) {
     const auth = await getAuth();
     google.options({ auth });
-    const fileIds = [];
-    for (const fileUrl of urls) {
-        const extractedFileId = getFileIdFromUrl(fileUrl);
-        if (extractedFileId) {
-            fileIds.push(extractedFileId);
-        }
-    }
-    for (let i = 0; i < fileIds.length; i++) {
+    // const fileIds = [];
+    // for (const fileUrl of urls) {
+    //     const extractedFileId = getFileIdFromUrl(fileUrl);
+    //     if (extractedFileId) {
+    //         fileIds.push(extractedFileId);
+    //     }
+    // }
+    for (let i = 0; i < paths.length; i++) {
         try {
-            const fileId = fileIds[i];
+            const path = paths[i];
             const title = titles[i];
             const description = descriptions[i];
 
-            // Download the video (using your provided downloadFile function)
-            const filePath = await downloadFile(fileId);
-            // Check if the file was downloaded successfully
-            if (!filePath) {
-                console.warn(`Skipped upload for fileId: ${fileId}`);
-                continue; // Skip upload if download failed
-            }
-
             // Upload the downloaded video (using your provided uploadFile function)
-            await uploadFile(filePath, title, description).catch(console.error);
+            await uploadFile(path, title, description).catch(console.error);
 
         } catch (error) {
-            console.error(`Error uploading ${fileIds[i]}: ${error.message}`);
+            console.error(`Error uploading ${paths[i]}: ${error.message}`);
         }
     }
 }
 
 if (module === require.main) {
     if (process.argv.length % 3 !== 2) {
-        console.error('Usage: node download.js <url1> <title1> <description1> <url2> <title2> <description2> ...');
+        console.error('Usage: node download.js <path1> <title1> <description1> <path2> <title2> <description2> ...');
         process.exit(1); // Exit with an error code
     }
-    const fileIds = [];
+    const paths = [];
     const titles = [];
     const descriptions = [];
     for (let i = 2; i < process.argv.length; i += 3) {
-        fileIds.push(process.argv[i]);
+        paths.push(process.argv[i]);
         titles.push(process.argv[i + 1]);
         descriptions.push(process.argv[i + 2]);
     }
 
-    downloadAndUploadFiles(fileIds, titles, descriptions)
+    UploadAllFIles(paths, titles, descriptions)
         .catch(error => {
             console.error(error.message);
         });
 }
-module.exports = downloadAndUploadFiles;
+module.exports = UploadAllFIles;
