@@ -1,69 +1,58 @@
 'use strict';
 
 const { google } = require('googleapis');
-const fs = require('fs');
-const readline = require('readline');
-const { authenticate } = require('@google-cloud/local-auth');
 const path = require('path');
+const AuthSingleton = require('./authSingleton');
+const UploadHandler = require('./uploadHandler');
 
-const drive = google.drive('v3');
-const youtube = google.youtube('v3');
-
-const SCOPES = [
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/drive.appdata',
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/drive.metadata',
-    'https://www.googleapis.com/auth/drive.metadata.readonly',
-    'https://www.googleapis.com/auth/drive.photos.readonly',
-    'https://www.googleapis.com/auth/drive.readonly',
-    'https://www.googleapis.com/auth/youtube.upload',
-    'https://www.googleapis.com/auth/youtube'
-];
-
-class UploadError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = 'UploadError';
-    }
+function getTitleFromPath(filePath) {
+    const baseName = path.basename(filePath);
+    return path.parse(baseName).name;
 }
 
-async function uploadFile(auth, filePath, vidTitle, vidDescription) {
-    const fileSize = fs.statSync(filePath).size;
-    const res = await youtube.videos.insert(
-        // ...
-    );
-    // ...
-    return res.data;
-}
-
-async function getAuth() {
-    try {
-        const auth = await authenticate({
-            keyfilePath: path.join(__dirname, './client_secret.json'),
-            scopes: SCOPES,
-        });
-        return auth;
-    } catch (error) {
-        throw new UploadError('Error during authentication: ' + error.message);
-    }
-}
-
-async function uploadFiles(auth, paths, titles, descriptions) {
-    const promises = paths.map((path, i) => {
-        return uploadFile(auth, path, titles[i], descriptions[i]).catch(error => {
-            console.error(`Error uploading ${path}: ${error.message}`);
-        });
-    });
-    return Promise.all(promises);
-}
-
-async function UploadAllFiles(paths, titles, descriptions) {
-    const auth = await getAuth();
+async function UploadAllFiles(paths, descriptions) {
+    const auth = await AuthSingleton.getInstance().authenticate();
     google.options({ auth });
-    return uploadFiles(auth, paths, titles, descriptions);
+    const uploadHandler = new UploadHandler(auth);
+    const titles = paths.map(getTitleFromPath);
+    await uploadHandler.uploadFiles(paths, titles, descriptions);
 }
 
-// ...
+async function getInputs() {
+    const inquirer = await import('inquirer');
+
+    const inputs = await inquirer.default.prompt([
+        {
+            type: 'input',
+            name: 'paths',
+            message: 'Enter file paths (separated by comma):',
+        },
+        {
+            type: 'input',
+            name: 'descriptions',
+            message: 'Enter file descriptions (separated by comma):',
+        },
+    ]);
+
+    const paths = inputs.paths.split(',').map(filePath => filePath.trim().replace(/^'(.*)'$/, '$1'));
+    const descriptions = inputs.descriptions.split(',');
+
+    if (paths.length !== descriptions.length) {
+        console.error('The number of paths and descriptions must be the same.');
+        process.exit(1);
+    }
+
+    return { paths, descriptions };
+}
+
+if (module === require.main) {
+    getInputs()
+        .then(({ paths, descriptions }) => {
+            UploadAllFiles(paths, descriptions)
+                .catch(error => {
+                    console.error(error.message);
+                });
+        });
+}
 
 module.exports = UploadAllFiles;
