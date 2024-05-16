@@ -1,3 +1,4 @@
+// src/server.js
 'use strict';
 
 const { google } = require('googleapis');
@@ -11,11 +12,15 @@ function getTitleFromPath(filePath) {
 }
 
 async function UploadAllFiles(paths, descriptions) {
-    const auth = await AuthSingleton.getInstance().authenticate();
-    google.options({ auth });
-    const uploadHandler = new UploadHandler(auth);
-    const titles = paths.map(getTitleFromPath);
-    await uploadHandler.uploadFiles(paths, titles, descriptions);
+    try {
+        const auth = await AuthSingleton.getInstance().authenticate();
+        google.options({ auth });
+        const uploadHandler = new UploadHandler(auth);
+        const titles = paths.map(getTitleFromPath);
+        await uploadHandler.uploadFiles(paths, titles, descriptions);
+    } catch (error) {
+        console.error(error.message);
+    }
 }
 
 async function getInputs() {

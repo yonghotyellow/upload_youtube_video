@@ -5,4 +5,5 @@ node_modules/
 package-lock.json
 package.json
 client_secret.json
-src/client_secret.json
+backend/src/client_secret.json
+uploads

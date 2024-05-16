@@ -1,5 +1,5 @@
 import React from 'react';
-import UploadForm from './uploadForm';
+import UploadForm from './UploadForm';
 
 function App() {
   return (

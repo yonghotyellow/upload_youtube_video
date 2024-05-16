@@ -1,0 +1,124 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    width: 100%;
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.upload-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.upload-box {
+    width: 300px;
+    height: 200px;
+    border: 2px dashed #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.plus-sign {
+    font-size: 48px;
+    color: #ccc;
+}
+
+.upload-text {
+    font-size: 18px;
+    color: #ccc;
+}
+
+.preview-container {
+    width: 66.66%; /* 2/3 of the page width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.header .column {
+    flex: 1;
+    text-align: center;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+}
+
+.preview-item video {
+    width: 300px; /* Increase the width */
+    height: 500px; /* Increase the height */
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+
+.preview-item .info-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.preview-item .info-container .title {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.preview-item .info-container .description {
+    color: #888;
+    font-size: 0.9em;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
